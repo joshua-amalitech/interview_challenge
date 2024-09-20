@@ -1,13 +1,13 @@
-import 'package:example_test/employee.dart';
+import 'package:example_test/models/employee.dart';
 import 'package:example_test/employee_service.dart';
-import 'package:example_test/extension.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:example_test/models/month_entry.dart';
+import 'package:flutter/material.dart';
 
 final class HomeController extends ChangeNotifier {
   bool isLoading = false;
   List<Employee> employees = [];
-  Map<int, List<Employee>> data = {};
   List<int> months = [];
+  Map<int, MonthEntry> data = {};
 
   final EmployeeService service = EmployeeService();
 
@@ -26,19 +26,33 @@ final class HomeController extends ChangeNotifier {
 
   void groupByDate() {
     for (var employee in employees) {
-      final empDate = employee.dateOfEmployment.month;
-      final dobDate = employee.dateOfBirth.month;
+      final empMonth = employee.dateOfEmployment.month;
+      final dobMonth = employee.dateOfBirth.month;
 
-      var categoryData = data[empDate] ?? [];
-      categoryData.add(employee);
-      data[empDate] = categoryData;
+      var monthEvent = data[empMonth];
+      if (monthEvent == null) {
+        data[empMonth] = MonthEntry.create(employee.dateOfEmployment, employee);
+      } else {
+        monthEvent.addEvent(employee.dateOfEmployment, employee);
+        data[empMonth] = monthEvent;
+      }
 
-      categoryData = data[dobDate] ?? [];
-      categoryData.add(employee);
-      data[dobDate] = categoryData;
+      monthEvent = data[dobMonth];
+      if (monthEvent == null) {
+        data[dobMonth] = MonthEntry.create(employee.dateOfBirth, employee);
+      } else {
+        monthEvent.addEvent(employee.dateOfBirth, employee);
+        data[dobMonth] = monthEvent;
+      }
+
+      data[dobMonth]?.days.sort();
+      data[empMonth]?.days.sort();
     }
 
     months = data.keys.toList();
     months.sort();
+
+    final index = months.indexOf(DateTime.now().month);
+    months = months.sublist(index) + months.sublist(0, index);
   }
 }

@@ -2,7 +2,7 @@ import 'package:example_test/extension.dart';
 import 'package:example_test/home_controller.dart';
 import 'package:flutter/material.dart';
 
-import 'employee.dart';
+import 'models/employee.dart';
 
 class HomeScreen extends StatefulWidget {
   final HomeController controller;
@@ -42,6 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ...widget.controller.months.map((month) {
+                    final year = month < DateTime.now().month
+                        ? " ${DateTime.now().year + 1}"
+                        : "";
+
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -53,14 +57,33 @@ class _HomeScreenState extends State<HomeScreen> {
                             horizontal: 16.0,
                           ),
                           child: Text(
-                            month.parseMonth(),
+                            "${month.parseMonth()}$year",
                             style: theme.textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.w800,
                               letterSpacing: 1.2,
                             ),
                           ),
                         ),
-                        _buildCardList(month, theme),
+                        ...widget.controller.data[month]!.days.map((day) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                ),
+                                child: Text(
+                                  "$day${day.suffix()}",
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.9,
+                                  ),
+                                ),
+                              ),
+                              _buildCardList(month, day, theme),
+                            ],
+                          );
+                        }),
                       ],
                     );
                   })
@@ -73,8 +96,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  ListView _buildCardList(int month, ThemeData theme) {
-    final employees = widget.controller.data[month] ?? [];
+  ListView _buildCardList(int month, int day, ThemeData theme) {
+    final employees = widget.controller.data[month]?.events[day] ?? [];
 
     return ListView.builder(
       primary: false,
