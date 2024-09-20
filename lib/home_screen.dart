@@ -20,9 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    widget.controller.addListener(() {
-      setState(() {});
-    });
+    widget.controller.addListener(() => setState(() {}));
     widget.controller.loadData();
   }
 
@@ -113,18 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontSize: 20.0,
                 ),
               ),
-              subtitle: Row(
-                children: [
-                  const Icon(Icons.celebration),
-                  const SizedBox(width: 8.0),
-                  Text(
-                    _renderSubtitle(month.parseMonth(), employee),
-                    style: const TextStyle(
-                      fontSize: 14.0,
-                    ),
-                  ),
-                ],
-              ),
+              subtitle: _buildSubtitle(month, employee),
               trailing: _buildTrailing(DateTime.now()),
             ),
           ),
@@ -133,15 +120,36 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  String _renderSubtitle(String month, Employee employee) {
-    String monthDob = employee.dateOfBirth.getMonth();
+  Widget _buildSubtitle(int month, Employee employee) {
+    final monthDob = employee.dateOfBirth.month;
+    final empYears = employee.yearsOfEmployment;
+
+    Icon icon = const Icon(
+      Icons.favorite_rounded,
+      color: Colors.red,
+    );
+    String subtitle = "$empYears${empYears.suffix()} Company Anniversary";
 
     if (month == monthDob) {
-      return "Birthday on ${employee.displayDob}";
+      icon = const Icon(
+        Icons.celebration_rounded,
+        color: Colors.green,
+      );
+      subtitle = "Birthday on ${employee.displayDob}";
     }
 
-    final empYears = employee.yearsOfEmployment;
-    return "$empYears${empYears.suffix()} Company Anniversary";
+    return Row(
+      children: [
+        icon,
+        const SizedBox(width: 8.0),
+        Text(
+          subtitle,
+          style: const TextStyle(
+            fontSize: 14.0,
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildTrailing(DateTime date) {
@@ -154,7 +162,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text((days - date.day).toString()),
+        Text(
+          (days - date.day).toString(),
+          style: const TextStyle(fontSize: 20.0),
+        ),
         const Text("Days"),
       ],
     );
